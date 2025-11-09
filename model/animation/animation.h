@@ -1,0 +1,7 @@
+#include "clip.h"
+#include "frame.h"
+#include "pose.h"
+#include "track.h"
+#include "skeleton.h"
+#include "transformTrack.h"
+#include "controller.h"
