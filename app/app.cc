@@ -34,6 +34,7 @@ void App::init()
   this->viewer->addModel("astronaut", "models/astronaut/scene.gltf");
   this->viewer->addModel("man", "models/man/scene.gltf");
   this->viewer->addModel("mira", "models/mira/scene.gltf");
+  this->viewer->addModel("alien", "models/alien/Alien.gltf");
 
   this->viewer->currModel = "astronaut";
 
@@ -69,9 +70,7 @@ void App::run()
 void App::calcFps()
 {
   auto now = std::chrono::high_resolution_clock::now();
-  this->delta = std::chrono::duration<float, std::chrono::seconds::period>(
-                    now - lastFrameDuration)
-                    .count();
+  this->delta = std::chrono::duration<float, std::chrono::seconds::period>(now - lastFrameDuration).count();
   lastFrameDuration = now;
   this->fps = 1.0 / this->delta;
   this->elapsed += this->delta;

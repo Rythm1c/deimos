@@ -92,9 +92,6 @@ std::vector<Mesh> GLTFFile::getMeshes()
 
   std::cout << "\nProcessing meshes..." << std::endl;
 
-  Mesh tmpmesh = {};
-  tmpmesh.mode = TRIANGLES;
-
   for (size_t m = 0; m < this->tinyModel.meshes.size(); ++m)
   {
     tinygltf::Mesh &mesh = this->tinyModel.meshes[m];
@@ -103,25 +100,60 @@ std::vector<Mesh> GLTFFile::getMeshes()
 
     for (size_t j = 0; j < mesh.primitives.size(); ++j)
     {
-      tmpmesh.vertices.clear();
-      tmpmesh.indices.clear();
+      Mesh tmpmesh = {};
+      tmpmesh.mode = TRIANGLES;
 
       tinygltf::Primitive &primitive = mesh.primitives[j];
       // positions
       auto it = primitive.attributes.find("POSITION");
       if (it != primitive.attributes.end())
       {
-        const float *positions = getData<float>(this->tinyModel, it->second);
-        int count = tinyModel.accessors[it->second].count;
+        const tinygltf::Accessor &accessor = tinyModel.accessors[it->second];
+        int count = accessor.count;
+        std::cout << "  - Position component type: " << accessor.componentType << std::endl;
 
+        Vector3f pos;
         for (size_t i = 0; i < count; ++i)
         {
-          Vertex vertex = {
-              .pos = Vector3f(
-                  positions[i * 3 + 0],
-                  positions[i * 3 + 1],
-                  positions[i * 3 + 2]),
-          };
+          // Handle different component types for positions
+          switch (accessor.componentType)
+          {
+          case TINYGLTF_COMPONENT_TYPE_FLOAT:
+          {
+            const float *data = getData<float>(tinyModel, it->second);
+            pos = Vector3f(data[i * 3], data[i * 3 + 1], data[i * 3 + 2]);
+            break;
+          }
+          case TINYGLTF_COMPONENT_TYPE_BYTE:
+          {
+            const int8_t *data = getData<int8_t>(tinyModel, it->second);
+            pos = Vector3f(data[i * 3] / 127.0f, data[i * 3 + 1] / 127.0f, data[i * 3 + 2] / 127.0f);
+            break;
+          }
+          case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+          {
+            const uint8_t *data = getData<uint8_t>(tinyModel, it->second);
+            pos = Vector3f(data[i * 3] / 255.0f, data[i * 3 + 1] / 255.0f, data[i * 3 + 2] / 255.0f);
+            break;
+          }
+          case TINYGLTF_COMPONENT_TYPE_SHORT:
+          {
+            const int16_t *data = getData<int16_t>(tinyModel, it->second);
+            pos = Vector3f(data[i * 3] / 32767.0f, data[i * 3 + 1] / 32767.0f, data[i * 3 + 2] / 32767.0f);
+            break;
+          }
+          case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+          {
+            const uint16_t *data = getData<uint16_t>(tinyModel, it->second);
+            pos = Vector3f(data[i * 3] / 65535.0f, data[i * 3 + 1] / 65535.0f, data[i * 3 + 2] / 65535.0f);
+            break;
+          }
+          default:
+            std::cerr << "Unsupported position component type: " << accessor.componentType << std::endl;
+            pos = Vector3f(0, 0, 0);
+          }
+
+          Vertex vertex = {.pos = pos};
           tmpmesh.vertices.push_back(vertex);
         }
       }
@@ -135,16 +167,40 @@ std::vector<Mesh> GLTFFile::getMeshes()
       it = primitive.attributes.find("NORMAL");
       if (it != primitive.attributes.end())
       {
-        const float *normals = getData<float>(this->tinyModel, it->second);
-        int count = tinyModel.accessors[it->second].count;
+        const tinygltf::Accessor &accessor = tinyModel.accessors[it->second];
+        int count = accessor.count;
+        std::cout << "  - Normal component type: " << accessor.componentType << std::endl;
 
+        Vector3f norm;
         for (size_t i = 0; i < count; ++i)
         {
+          // Handle different component types for normals
+          switch (accessor.componentType)
+          {
+          case TINYGLTF_COMPONENT_TYPE_FLOAT:
+          {
+            const float *data = getData<float>(tinyModel, it->second);
+            norm = Vector3f(data[i * 3], data[i * 3 + 1], data[i * 3 + 2]);
+            break;
+          }
+          case TINYGLTF_COMPONENT_TYPE_BYTE:
+          {
+            const int8_t *data = getData<int8_t>(tinyModel, it->second);
+            norm = Vector3f(data[i * 3] / 127.0f, data[i * 3 + 1] / 127.0f, data[i * 3 + 2] / 127.0f);
+            break;
+          }
+          case TINYGLTF_COMPONENT_TYPE_SHORT:
+          {
+            const int16_t *data = getData<int16_t>(tinyModel, it->second);
+            norm = Vector3f(data[i * 3] / 32767.0f, data[i * 3 + 1] / 32767.0f, data[i * 3 + 2] / 32767.0f);
+            break;
+          }
+          default:
+            std::cerr << "Unsupported normal component type: " << accessor.componentType << std::endl;
+            norm = Vector3f(0, 0, 0);
+          }
 
-          tmpmesh.vertices[i].norm = Vector3f(
-              normals[i * 3 + 0],
-              normals[i * 3 + 1],
-              normals[i * 3 + 2]);
+          tmpmesh.vertices[i].norm = norm;
         }
       }
       else
@@ -157,15 +213,40 @@ std::vector<Mesh> GLTFFile::getMeshes()
       it = primitive.attributes.find("TEXCOORD_0");
       if (it != primitive.attributes.end())
       {
-        const float *uvs = getData<float>(this->tinyModel, it->second);
-        int count = tinyModel.accessors[it->second].count;
+        const tinygltf::Accessor &accessor = tinyModel.accessors[it->second];
+        int count = accessor.count;
+        std::cout << "  - TexCoord component type: " << accessor.componentType << std::endl;
 
+        Vector2f uv;
         for (size_t i = 0; i < count; ++i)
         {
+          // Handle different component types for UVs
+          switch (accessor.componentType)
+          {
+          case TINYGLTF_COMPONENT_TYPE_FLOAT:
+          {
+            const float *data = getData<float>(tinyModel, it->second);
+            uv = Vector2f(data[i * 2], data[i * 2 + 1]);
+            break;
+          }
+          case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+          {
+            const uint8_t *data = getData<uint8_t>(tinyModel, it->second);
+            uv = Vector2f(data[i * 2] / 255.0f, data[i * 2 + 1] / 255.0f);
+            break;
+          }
+          case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+          {
+            const uint16_t *data = getData<uint16_t>(tinyModel, it->second);
+            uv = Vector2f(data[i * 2] / 65535.0f, data[i * 2 + 1] / 65535.0f);
+            break;
+          }
+          default:
+            std::cerr << "Unsupported texcoord component type: " << accessor.componentType << std::endl;
+            uv = Vector2f(0, 0);
+          }
 
-          tmpmesh.vertices[i].tc = Vector2f(
-              uvs[i * 2 + 0],
-              uvs[i * 2 + 1]);
+          tmpmesh.vertices[i].tc = uv;
         }
       }
       else
@@ -177,20 +258,37 @@ std::vector<Mesh> GLTFFile::getMeshes()
       it = primitive.attributes.find("JOINTS_0");
       if (it != primitive.attributes.end())
       {
-        const unsigned short *joints =
-            getData<unsigned short>(this->tinyModel, it->second);
-        int count = tinyModel.accessors[it->second].count;
+        const tinygltf::Accessor &accessor = tinyModel.accessors[it->second];
+        int count = accessor.count;
+        std::cout << "  - Joints component type: " << accessor.componentType << std::endl;
 
         std::vector<int> skinjoints;
         skinjoints = tinyModel.skins[0].joints;
 
         for (size_t i = 0; i < count; ++i)
         {
+          int joint_indices[4] = {0, 0, 0, 0};
+          
+          // Handle different component types for joints
+          switch(accessor.componentType) {
+            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: {
+              const uint8_t* data = getData<uint8_t>(tinyModel, it->second);
+              for(int j = 0; j < 4; ++j) joint_indices[j] = data[i * 4 + j];
+              break;
+            }
+            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: {
+              const uint16_t* data = getData<uint16_t>(tinyModel, it->second);
+              for(int j = 0; j < 4; ++j) joint_indices[j] = data[i * 4 + j];
+              break;
+            }
+            default:
+              std::cerr << "Unsupported joint component type: " << accessor.componentType << std::endl;
+          }
 
-          tmpmesh.vertices[i].joints[0] = skinjoints[joints[i * 4 + 0]];
-          tmpmesh.vertices[i].joints[1] = skinjoints[joints[i * 4 + 1]];
-          tmpmesh.vertices[i].joints[2] = skinjoints[joints[i * 4 + 2]];
-          tmpmesh.vertices[i].joints[3] = skinjoints[joints[i * 4 + 3]];
+          tmpmesh.vertices[i].joints[0] = skinjoints[joint_indices[0]];
+          tmpmesh.vertices[i].joints[1] = skinjoints[joint_indices[1]];
+          tmpmesh.vertices[i].joints[2] = skinjoints[joint_indices[2]];
+          tmpmesh.vertices[i].joints[3] = skinjoints[joint_indices[3]];
         };
       }
       else
@@ -202,15 +300,39 @@ std::vector<Mesh> GLTFFile::getMeshes()
       it = primitive.attributes.find("WEIGHTS_0");
       if (it != primitive.attributes.end())
       {
-        const float *weights = getData<float>(this->tinyModel, it->second);
-        int count = tinyModel.accessors[it->second].count;
+        const tinygltf::Accessor &accessor = tinyModel.accessors[it->second];
+        int count = accessor.count;
+        std::cout << "  - Weights component type: " << accessor.componentType << std::endl;
 
         for (size_t i = 0; i < count; ++i)
         {
-          tmpmesh.vertices[i].weights[0] = weights[i * 4 + 0];
-          tmpmesh.vertices[i].weights[1] = weights[i * 4 + 1];
-          tmpmesh.vertices[i].weights[2] = weights[i * 4 + 2];
-          tmpmesh.vertices[i].weights[3] = weights[i * 4 + 3];
+          float weights[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+          
+          // Handle different component types for weights
+          switch(accessor.componentType) {
+            case TINYGLTF_COMPONENT_TYPE_FLOAT: {
+              const float* data = getData<float>(tinyModel, it->second);
+              for(int j = 0; j < 4; ++j) weights[j] = data[i * 4 + j];
+              break;
+            }
+            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: {
+              const uint8_t* data = getData<uint8_t>(tinyModel, it->second);
+              for(int j = 0; j < 4; ++j) weights[j] = data[i * 4 + j] / 255.0f;
+              break;
+            }
+            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: {
+              const uint16_t* data = getData<uint16_t>(tinyModel, it->second);
+              for(int j = 0; j < 4; ++j) weights[j] = data[i * 4 + j] / 65535.0f;
+              break;
+            }
+            default:
+              std::cerr << "Unsupported weight component type: " << accessor.componentType << std::endl;
+          }
+
+          tmpmesh.vertices[i].weights[0] = weights[0];
+          tmpmesh.vertices[i].weights[1] = weights[1];
+          tmpmesh.vertices[i].weights[2] = weights[2];
+          tmpmesh.vertices[i].weights[3] = weights[3];
         };
       }
       else
@@ -221,35 +343,101 @@ std::vector<Mesh> GLTFFile::getMeshes()
 
       if (primitive.indices >= 0)
       {
-        const uint *indices = getData<uint>(tinyModel, primitive.indices);
-        int count = tinyModel.accessors[primitive.indices].count;
+        const tinygltf::Accessor &accessor = tinyModel.accessors[primitive.indices];
+        int count = accessor.count;
         std::cout << "  - Index count: " << count << std::endl;
-        for (int i = 0; i < count; ++i)
+        std::cout << "  - Index component type: " << accessor.componentType << std::endl;
+
+        std::vector<uint32_t> indices;
+        indices.reserve(count);
+
+        // Handle different component types
+        switch (accessor.componentType)
         {
-          tmpmesh.indices.push_back(indices[i]);
+        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+        {
+          const uint8_t *data = getData<uint8_t>(tinyModel, primitive.indices);
+          for (int i = 0; i < count; ++i)
+            indices.push_back(data[i]);
+          break;
         }
+        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+        {
+          const uint16_t *data = getData<uint16_t>(tinyModel, primitive.indices);
+          for (int i = 0; i < count; ++i)
+            indices.push_back(data[i]);
+          break;
+        }
+        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+        {
+          const uint32_t *data = getData<uint32_t>(tinyModel, primitive.indices);
+          for (int i = 0; i < count; ++i)
+            indices.push_back(data[i]);
+          break;
+        }
+        default:
+          std::cerr << "Unsupported index component type: " << accessor.componentType << std::endl;
+          break;
+        }
+
+        // Print the first few vertices of this primitive
+        std::cout << "\nFirst few vertices of primitive " << j << ":" << std::endl;
+        for (size_t i = 0; i < std::min(size_t(3), tmpmesh.vertices.size()); ++i)
+        {
+          std::cout << "v" << i << ": pos("
+                    << tmpmesh.vertices[i].pos.x << ", "
+                    << tmpmesh.vertices[i].pos.y << ", "
+                    << tmpmesh.vertices[i].pos.z << ") norm("
+                    << tmpmesh.vertices[i].norm.x << ", "
+                    << tmpmesh.vertices[i].norm.y << ", "
+                    << tmpmesh.vertices[i].norm.z << ")" << std::endl;
+        }
+
+        // Print the first triangle's indices
+        std::cout << "First triangle indices: ";
+        if (count >= 3)
+        {
+          std::cout << indices[0] << ", " << indices[1] << ", " << indices[2] << std::endl;
+        }
+
+        // Add indices to mesh
+        tmpmesh.indices = indices;
       }
       else
       {
         std::cout << "  - Warning: No indices found in primitive" << std::endl;
       }
-      
+
       std::cout << "  - Vertex count: " << tmpmesh.vertices.size() << std::endl;
       std::cout << "  - Index count: " << tmpmesh.indices.size() << std::endl;
 
-      const tinygltf::Material &material =
-          tinyModel.materials[primitive.material];
+      // Debug: Print first few vertices
+      std::cout << "\nSample vertex data for primitive " << j << ":" << std::endl;
+      for (size_t i = 0; i < std::min(size_t(5), tmpmesh.vertices.size()); ++i)
+      {
+        const auto &v = tmpmesh.vertices[i];
+        std::cout << "Vertex " << i << ":" << std::endl;
+        std::cout << "  Position: (" << v.pos.x << ", " << v.pos.y << ", " << v.pos.z << ")" << std::endl;
+        std::cout << "  Normal: (" << v.norm.x << ", " << v.norm.y << ", " << v.norm.z << ")" << std::endl;
+        std::cout << "  UV: (" << v.tc.x << ", " << v.tc.y << ")" << std::endl;
+      }
+
+      // Debug: Print first few indices
+      std::cout << "\nSample indices for primitive " << j << ":" << std::endl;
+      for (size_t i = 0; i < std::min(size_t(15), tmpmesh.indices.size()); i += 3)
+      {
+        std::cout << "Triangle " << i / 3 << ": [" << tmpmesh.indices[i]
+                  << ", " << tmpmesh.indices[i + 1]
+                  << ", " << tmpmesh.indices[i + 2] << "]" << std::endl;
+      }
+
+      const tinygltf::Material &material = tinyModel.materials[primitive.material];
       const tinygltf::PbrMetallicRoughness &pbr = material.pbrMetallicRoughness;
 
       Vector3f baseCol;
       // If base color is too dark (sum of components < 0.1), use a default color
-      if (pbr.baseColorFactor[0] + pbr.baseColorFactor[1] + pbr.baseColorFactor[2] < 0.1) {
-          std::cout << "Warning: Very dark material detected, using default color" << std::endl;
-          baseCol = Vector3f(0.7f, 0.7f, 0.7f);  // Default to light gray
-      } else {
-          baseCol = Vector3f(pbr.baseColorFactor[0], pbr.baseColorFactor[1],
-                           pbr.baseColorFactor[2]);
-      }
+
+      baseCol = Vector3f(pbr.baseColorFactor[0], pbr.baseColorFactor[1], pbr.baseColorFactor[2]);
 
       tmpmesh.material = {
           .roughness = float(pbr.roughnessFactor),
@@ -262,18 +450,19 @@ std::vector<Mesh> GLTFFile::getMeshes()
       // Debug vertex positions and bounds
       Vector3f minBounds = Vector3f(std::numeric_limits<float>::max());
       Vector3f maxBounds = Vector3f(-std::numeric_limits<float>::max());
-      
+
       std::cout << "\nMesh bounds check:" << std::endl;
-      for (const auto& vertex : tmpmesh.vertices) {
-          minBounds.x = std::min(minBounds.x, vertex.pos.x);
-          minBounds.y = std::min(minBounds.y, vertex.pos.y);
-          minBounds.z = std::min(minBounds.z, vertex.pos.z);
-          
-          maxBounds.x = std::max(maxBounds.x, vertex.pos.x);
-          maxBounds.y = std::max(maxBounds.y, vertex.pos.y);
-          maxBounds.z = std::max(maxBounds.z, vertex.pos.z);
+      for (const auto &vertex : tmpmesh.vertices)
+      {
+        minBounds.x = std::min(minBounds.x, vertex.pos.x);
+        minBounds.y = std::min(minBounds.y, vertex.pos.y);
+        minBounds.z = std::min(minBounds.z, vertex.pos.z);
+
+        maxBounds.x = std::max(maxBounds.x, vertex.pos.x);
+        maxBounds.y = std::max(maxBounds.y, vertex.pos.y);
+        maxBounds.z = std::max(maxBounds.z, vertex.pos.z);
       }
-      
+
       std::cout << "- Bounds min: (" << minBounds.x << ", " << minBounds.y << ", " << minBounds.z << ")" << std::endl;
       std::cout << "- Bounds max: (" << maxBounds.x << ", " << maxBounds.y << ", " << maxBounds.z << ")" << std::endl;
       std::cout << "- Material properties:" << std::endl;

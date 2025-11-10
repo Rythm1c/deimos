@@ -33,7 +33,7 @@ void Model::normalize()
   }
   Vector3f size = box.maxPt - box.minPt;
   float maxSide = std::max(size.x, std::max(size.y, size.z));
-  factor = Vector3f(1.0f / maxSide);
+  factor = Vector3f(2.0f / maxSide);
 }
 
 void Model::render(Shader &shader)

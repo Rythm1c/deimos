@@ -115,7 +115,7 @@ void Viewer::addModel(std::string name, std::string path)
       }
     }
 
-    model->scale(Vector3f(2.5));
+    model->scale(Vector3f(2.0));
     model->orient(Quat(180.0, Vector3f(0.0, 1.0, 0.0)));
     model->translate(Vector3f(0.0, 0.0, 5.0));
 
@@ -155,8 +155,13 @@ void Viewer::update(float ratio, float delta)
   this->phongAnimated->updateVec3("lightDirection", this->lightDir);
   this->phongAnimated->updateVec3("camPos", this->camera->pos);
   this->phongAnimated->updateMat4("view", this->camera->view());
-  this->phongAnimated->updateMat4("projection",
-                                  this->camera->projection(ratio));
+  this->phongAnimated->updateMat4("projection", this->camera->projection(ratio));
+
+  this->pbrStatic->use();
+  this->pbrStatic->updateVec3("lightDirection", this->lightDir);
+  this->pbrStatic->updateVec3("camPos", this->camera->pos);
+  this->pbrStatic->updateMat4("view", this->camera->view());
+  this->pbrStatic->updateMat4("projection", this->camera->projection(ratio));
 
   this->pbrAnimated->use();
   this->pbrAnimated->updateVec3("lightDirection", this->lightDir);
@@ -193,10 +198,31 @@ void Viewer::renderCurrModel()
       this->phongAnimated->updateMat4(value.c_str(), mats[i]);
     }
     this->models[this->currModel]->render(*this->phongAnimated);
-  }8*/
+  }*/
 
+  // pbr static
+  /* this->pbrStatic->use();
+  // this->pbrStatic->updateInt("textured", false);
+  if (this->currModel != "None")
+  {
+
+    for (size_t i = 0; i < this->lights.size(); ++i)
+    {
+
+      const Light &light = this->lights[i];
+      this->pbrStatic->updateInt("lightCount", int(this->lights.size()));
+      std::string value = "lights[" + std::to_string(i) + "]";
+      this->pbrStatic->updateVec3((value + ".color").c_str(), light.color);
+      this->pbrStatic->updateVec3((value + ".position").c_str(), light.position);
+    }
+
+    this->pbrStatic->updateMat4("transform", this->models[this->currModel]->get_transform());
+
+    this->models[this->currModel]->render(*this->pbrStatic);
+  }
+ */
   this->pbrAnimated->use();
-  this->pbrAnimated->updateInt("textured", false);
+  // this->pbrAnimated->updateInt("textured", false);
   if (this->currModel != "None")
   {
 
@@ -207,12 +233,10 @@ void Viewer::renderCurrModel()
       this->pbrAnimated->updateInt("lightCount", int(this->lights.size()));
       std::string value = "lights[" + std::to_string(i) + "]";
       this->pbrAnimated->updateVec3((value + ".color").c_str(), light.color);
-      this->pbrAnimated->updateVec3((value + ".position").c_str(),
-                                    light.position);
+      this->pbrAnimated->updateVec3((value + ".position").c_str(), light.position);
     }
 
-    this->pbrAnimated->updateMat4(
-        "transform", this->models[this->currModel]->get_transform());
+    this->pbrAnimated->updateMat4("transform", this->models[this->currModel]->get_transform());
 
     std::vector<Mat4x4> mats = this->models[this->currModel]->animController->getPose();
     for (size_t i = 0; i < mats.size(); i++)
@@ -221,18 +245,18 @@ void Viewer::renderCurrModel()
       this->pbrAnimated->updateMat4(value.c_str(), mats[i]);
     }
     this->models[this->currModel]->render(*this->pbrAnimated);
-
-    // Render bounding boxes if enabled
-    /* if (showBoundingBoxes) {
-      Mat4x4 modelTransform = this->models[this->currModel]->get_transform();
-      Mat4x4 viewMat = this->camera->view();
-      Mat4x4 projMat = this->camera->projection(16.0f/9.0f);  // Use appropriate aspect ratio
-
-      // Render bounding box for each mesh
-      for (const auto& mesh : this->models[this->currModel]->meshes) {
-        BoundingBox bbox = mesh.getBoundingBox();
-        this->debugRenderer.renderBoundingBox(bbox, modelTransform, viewMat, projMat);
-      }
-    } */
   }
 }
+
+// Render bounding boxes if enabled
+/* if (showBoundingBoxes) {
+  Mat4x4 modelTransform = this->models[this->currModel]->get_transform();
+  Mat4x4 viewMat = this->camera->view();
+  Mat4x4 projMat = this->camera->projection(16.0f/9.0f);  // Use appropriate aspect ratio
+
+  // Render bounding box for each mesh
+  for (const auto& mesh : this->models[this->currModel]->meshes) {
+    BoundingBox bbox = mesh.getBoundingBox();
+    this->debugRenderer.renderBoundingBox(bbox, modelTransform, viewMat, projMat);
+  }
+} */
