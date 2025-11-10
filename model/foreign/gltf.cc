@@ -41,13 +41,6 @@ GLTFFile::GLTFFile(std::string &path)
   {
     std::runtime_error("not a gltf or glb file!");
   }
-
-  // Print basic model information
-  std::cout << "Model loaded successfully:" << std::endl;
-  std::cout << "- Number of meshes: " << this->tinyModel.meshes.size() << std::endl;
-  std::cout << "- Number of materials: " << this->tinyModel.materials.size() << std::endl;
-  std::cout << "- Number of textures: " << this->tinyModel.textures.size() << std::endl;
-  std::cout << "- Number of nodes: " << this->tinyModel.nodes.size() << std::endl;
 }
 
 void GLTFFile::populateModel(Model &model)
@@ -90,13 +83,9 @@ std::vector<Mesh> GLTFFile::getMeshes()
 {
   std::vector<Mesh> meshes;
 
-  std::cout << "\nProcessing meshes..." << std::endl;
-
   for (size_t m = 0; m < this->tinyModel.meshes.size(); ++m)
   {
     tinygltf::Mesh &mesh = this->tinyModel.meshes[m];
-    std::cout << "\nMesh[" << m << "] '" << mesh.name << "'" << std::endl;
-    std::cout << "- Number of primitives: " << mesh.primitives.size() << std::endl;
 
     for (size_t j = 0; j < mesh.primitives.size(); ++j)
     {
@@ -110,7 +99,6 @@ std::vector<Mesh> GLTFFile::getMeshes()
       {
         const tinygltf::Accessor &accessor = tinyModel.accessors[it->second];
         int count = accessor.count;
-        std::cout << "  - Position component type: " << accessor.componentType << std::endl;
 
         Vector3f pos;
         for (size_t i = 0; i < count; ++i)
@@ -169,8 +157,6 @@ std::vector<Mesh> GLTFFile::getMeshes()
       {
         const tinygltf::Accessor &accessor = tinyModel.accessors[it->second];
         int count = accessor.count;
-        std::cout << "  - Normal component type: " << accessor.componentType << std::endl;
-
         Vector3f norm;
         for (size_t i = 0; i < count; ++i)
         {
@@ -215,7 +201,6 @@ std::vector<Mesh> GLTFFile::getMeshes()
       {
         const tinygltf::Accessor &accessor = tinyModel.accessors[it->second];
         int count = accessor.count;
-        std::cout << "  - TexCoord component type: " << accessor.componentType << std::endl;
 
         Vector2f uv;
         for (size_t i = 0; i < count; ++i)
@@ -260,7 +245,6 @@ std::vector<Mesh> GLTFFile::getMeshes()
       {
         const tinygltf::Accessor &accessor = tinyModel.accessors[it->second];
         int count = accessor.count;
-        std::cout << "  - Joints component type: " << accessor.componentType << std::endl;
 
         std::vector<int> skinjoints;
         skinjoints = tinyModel.skins[0].joints;
@@ -307,7 +291,6 @@ std::vector<Mesh> GLTFFile::getMeshes()
       {
         const tinygltf::Accessor &accessor = tinyModel.accessors[it->second];
         int count = accessor.count;
-        std::cout << "  - Weights component type: " << accessor.componentType << std::endl;
 
         for (size_t i = 0; i < count; ++i)
         {
@@ -357,8 +340,6 @@ std::vector<Mesh> GLTFFile::getMeshes()
       {
         const tinygltf::Accessor &accessor = tinyModel.accessors[primitive.indices];
         int count = accessor.count;
-        std::cout << "  - Index count: " << count << std::endl;
-        std::cout << "  - Index component type: " << accessor.componentType << std::endl;
 
         std::vector<uint32_t> indices;
         indices.reserve(count);
@@ -392,55 +373,12 @@ std::vector<Mesh> GLTFFile::getMeshes()
           break;
         }
 
-        // Print the first few vertices of this primitive
-        std::cout << "\nFirst few vertices of primitive " << j << ":" << std::endl;
-        for (size_t i = 0; i < std::min(size_t(3), tmpmesh.vertices.size()); ++i)
-        {
-          std::cout << "v" << i << ": pos("
-                    << tmpmesh.vertices[i].pos.x << ", "
-                    << tmpmesh.vertices[i].pos.y << ", "
-                    << tmpmesh.vertices[i].pos.z << ") norm("
-                    << tmpmesh.vertices[i].norm.x << ", "
-                    << tmpmesh.vertices[i].norm.y << ", "
-                    << tmpmesh.vertices[i].norm.z << ")" << std::endl;
-        }
-
-        // Print the first triangle's indices
-        std::cout << "First triangle indices: ";
-        if (count >= 3)
-        {
-          std::cout << indices[0] << ", " << indices[1] << ", " << indices[2] << std::endl;
-        }
-
         // Add indices to mesh
         tmpmesh.indices = indices;
       }
       else
       {
         std::cout << "  - Warning: No indices found in primitive" << std::endl;
-      }
-
-      std::cout << "  - Vertex count: " << tmpmesh.vertices.size() << std::endl;
-      std::cout << "  - Index count: " << tmpmesh.indices.size() << std::endl;
-
-      // Debug: Print first few vertices
-      std::cout << "\nSample vertex data for primitive " << j << ":" << std::endl;
-      for (size_t i = 0; i < std::min(size_t(5), tmpmesh.vertices.size()); ++i)
-      {
-        const auto &v = tmpmesh.vertices[i];
-        std::cout << "Vertex " << i << ":" << std::endl;
-        std::cout << "  Position: (" << v.pos.x << ", " << v.pos.y << ", " << v.pos.z << ")" << std::endl;
-        std::cout << "  Normal: (" << v.norm.x << ", " << v.norm.y << ", " << v.norm.z << ")" << std::endl;
-        std::cout << "  UV: (" << v.tc.x << ", " << v.tc.y << ")" << std::endl;
-      }
-
-      // Debug: Print first few indices
-      std::cout << "\nSample indices for primitive " << j << ":" << std::endl;
-      for (size_t i = 0; i < std::min(size_t(15), tmpmesh.indices.size()); i += 3)
-      {
-        std::cout << "Triangle " << i / 3 << ": [" << tmpmesh.indices[i]
-                  << ", " << tmpmesh.indices[i + 1]
-                  << ", " << tmpmesh.indices[i + 2] << "]" << std::endl;
       }
 
       const tinygltf::Material &material = tinyModel.materials[primitive.material];
@@ -462,26 +400,6 @@ std::vector<Mesh> GLTFFile::getMeshes()
       // Debug vertex positions and bounds
       Vector3f minBounds = Vector3f(std::numeric_limits<float>::max());
       Vector3f maxBounds = Vector3f(-std::numeric_limits<float>::max());
-
-      std::cout << "\nMesh bounds check:" << std::endl;
-      for (const auto &vertex : tmpmesh.vertices)
-      {
-        minBounds.x = std::min(minBounds.x, vertex.pos.x);
-        minBounds.y = std::min(minBounds.y, vertex.pos.y);
-        minBounds.z = std::min(minBounds.z, vertex.pos.z);
-
-        maxBounds.x = std::max(maxBounds.x, vertex.pos.x);
-        maxBounds.y = std::max(maxBounds.y, vertex.pos.y);
-        maxBounds.z = std::max(maxBounds.z, vertex.pos.z);
-      }
-
-      std::cout << "- Bounds min: (" << minBounds.x << ", " << minBounds.y << ", " << minBounds.z << ")" << std::endl;
-      std::cout << "- Bounds max: (" << maxBounds.x << ", " << maxBounds.y << ", " << maxBounds.z << ")" << std::endl;
-      std::cout << "- Material properties:" << std::endl;
-      std::cout << "  * Base color: (" << baseCol.x << ", " << baseCol.y << ", " << baseCol.z << ")" << std::endl;
-      std::cout << "  * Roughness: " << pbr.roughnessFactor << std::endl;
-      std::cout << "  * Metallic: " << pbr.metallicFactor << std::endl;
-      std::cout << "  * Base texture index: " << pbr.baseColorTexture.index << std::endl;
 
       tmpmesh.init();
       meshes.push_back(tmpmesh);

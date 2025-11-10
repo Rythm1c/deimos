@@ -105,14 +105,6 @@ void Viewer::addModel(std::string name, std::string path)
     else
     {
       std::cout << "Model loaded successfully with " << model->meshes.size() << " meshes" << std::endl;
-
-      // Print mesh information
-      for (size_t i = 0; i < model->meshes.size(); i++)
-      {
-        std::cout << "Mesh " << i << ":" << std::endl;
-        std::cout << "- Vertices: " << model->meshes[i].vertices.size() << std::endl;
-        std::cout << "- Indices: " << model->meshes[i].indices.size() << std::endl;
-      }
     }
 
     model->scale(Vector3f(2.0));
