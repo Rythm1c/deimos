@@ -49,6 +49,8 @@ public:
   void setSkeleton(class Skeleton *skeleton);
   void addClip(class Clip *clip);
   void removeClip(size_t index);
+  size_t clipCount() const;
+  std::string getCurrentAnimationName() const;
   class Clip *getClip(size_t index) const;
 
   void update(float deltaTime);

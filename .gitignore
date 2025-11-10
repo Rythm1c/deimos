@@ -1,6 +1,7 @@
 imgui.ini
-.vscode
 models
-*.o
 model_viewer
 venv
+build
+.vscode
+*.o

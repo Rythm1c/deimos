@@ -161,6 +161,21 @@ void Controller::setSpeed(float inSpeed)
   }
   this->speed = inSpeed;
 }
+std::string Controller::getCurrentAnimationName() const
+{
+  if (this->currentClip < this->clips.size())
+  {
+    return this->clips[this->currentClip]->GetName();
+  }
+  else
+  {
+    return "No Clip";
+  }
+}
+size_t Controller::clipCount() const
+{
+  return this->clips.size();
+}
 
 void Controller::clean()
 {

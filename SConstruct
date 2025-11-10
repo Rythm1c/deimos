@@ -30,15 +30,3 @@ program = env.Program(
         "GLEW",
     ],
 )
-
-import os
-
-
-def run_program(target, source, env):
-    executable = str(target[0])
-    print(f"running {executable}...")
-    os.system(f"./{executable}")
-
-
-env.AlwaysBuild(program)
-env.AddPostAction("model_viewer", run_program)

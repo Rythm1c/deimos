@@ -112,6 +112,27 @@ void App::renderGui()
   ImGui::SeparatorText("Animation Controls");
   if (this->viewer->getCurrModel()->animController)
   {
+    // clip selector
+    ImGui::Text("Clip");
+    const char *currentClipName = this->viewer->getCurrModel()->animController->getCurrentAnimationName().c_str();
+    if (ImGui::BeginCombo("##ClipSelector", currentClipName))
+    {
+      for (size_t i = 0; i < this->viewer->getCurrModel()->animController->clipCount(); i++)
+      {
+        std::string clipName = this->viewer->getCurrModel()->animController->getClip(i)->GetName();
+        bool is_selected = (this->viewer->getCurrModel()->animController->getCurrentAnimationName() == clipName);
+        if (ImGui::Selectable(clipName.c_str(), is_selected))
+        {
+          this->viewer->getCurrModel()->animController->setCurrentAnimation(i);
+        }
+        if (is_selected)
+        {
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndCombo();
+    }
+
     ImGui::Text("speed");
     float speed = this->viewer->getCurrModel()->animController->getSpeed();
 

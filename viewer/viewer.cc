@@ -78,13 +78,13 @@ void Viewer::init()
   this->pbrAnimated->updateInt("normalMap", 2);
 
   this->lights.push_back(
-      {.color = {300.0, 0.0, 300.0}, .position = {60.0, 10.0, -60.0}});
+      {.color = {300.0, 300.0, 300.0}, .position = {60.0, 10.0, -60.0}});
   this->lights.push_back(
       {.color = {300.0, 300.0, 300.0}, .position = {60.0, 10.0, 60.0}});
   this->lights.push_back(
-      {.color = {300.0, 300.0, 0.0}, .position = {-60.0, 10.0, 60.0}});
+      {.color = {300.0, 300.0, 300.0}, .position = {-60.0, 10.0, 60.0}});
   this->lights.push_back(
-      {.color = {0.0, 300.0, 300.0}, .position = {-60.0, 10.0, -60.0}});
+      {.color = {300.0, 300.0, 300.0}, .position = {-60.0, 10.0, -60.0}});
 }
 
 void Viewer::addModel(std::string name, std::string path)

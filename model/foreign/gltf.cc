@@ -268,21 +268,26 @@ std::vector<Mesh> GLTFFile::getMeshes()
         for (size_t i = 0; i < count; ++i)
         {
           int joint_indices[4] = {0, 0, 0, 0};
-          
+
           // Handle different component types for joints
-          switch(accessor.componentType) {
-            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: {
-              const uint8_t* data = getData<uint8_t>(tinyModel, it->second);
-              for(int j = 0; j < 4; ++j) joint_indices[j] = data[i * 4 + j];
-              break;
-            }
-            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: {
-              const uint16_t* data = getData<uint16_t>(tinyModel, it->second);
-              for(int j = 0; j < 4; ++j) joint_indices[j] = data[i * 4 + j];
-              break;
-            }
-            default:
-              std::cerr << "Unsupported joint component type: " << accessor.componentType << std::endl;
+          switch (accessor.componentType)
+          {
+          case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+          {
+            const uint8_t *data = getData<uint8_t>(tinyModel, it->second);
+            for (int j = 0; j < 4; ++j)
+              joint_indices[j] = data[i * 4 + j];
+            break;
+          }
+          case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+          {
+            const uint16_t *data = getData<uint16_t>(tinyModel, it->second);
+            for (int j = 0; j < 4; ++j)
+              joint_indices[j] = data[i * 4 + j];
+            break;
+          }
+          default:
+            std::cerr << "Unsupported joint component type: " << accessor.componentType << std::endl;
           }
 
           tmpmesh.vertices[i].joints[0] = skinjoints[joint_indices[0]];
@@ -307,26 +312,33 @@ std::vector<Mesh> GLTFFile::getMeshes()
         for (size_t i = 0; i < count; ++i)
         {
           float weights[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-          
+
           // Handle different component types for weights
-          switch(accessor.componentType) {
-            case TINYGLTF_COMPONENT_TYPE_FLOAT: {
-              const float* data = getData<float>(tinyModel, it->second);
-              for(int j = 0; j < 4; ++j) weights[j] = data[i * 4 + j];
-              break;
-            }
-            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: {
-              const uint8_t* data = getData<uint8_t>(tinyModel, it->second);
-              for(int j = 0; j < 4; ++j) weights[j] = data[i * 4 + j] / 255.0f;
-              break;
-            }
-            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: {
-              const uint16_t* data = getData<uint16_t>(tinyModel, it->second);
-              for(int j = 0; j < 4; ++j) weights[j] = data[i * 4 + j] / 65535.0f;
-              break;
-            }
-            default:
-              std::cerr << "Unsupported weight component type: " << accessor.componentType << std::endl;
+          switch (accessor.componentType)
+          {
+          case TINYGLTF_COMPONENT_TYPE_FLOAT:
+          {
+            const float *data = getData<float>(tinyModel, it->second);
+            for (int j = 0; j < 4; ++j)
+              weights[j] = data[i * 4 + j];
+            break;
+          }
+          case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+          {
+            const uint8_t *data = getData<uint8_t>(tinyModel, it->second);
+            for (int j = 0; j < 4; ++j)
+              weights[j] = data[i * 4 + j] / 255.0f;
+            break;
+          }
+          case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+          {
+            const uint16_t *data = getData<uint16_t>(tinyModel, it->second);
+            for (int j = 0; j < 4; ++j)
+              weights[j] = data[i * 4 + j] / 65535.0f;
+            break;
+          }
+          default:
+            std::cerr << "Unsupported weight component type: " << accessor.componentType << std::endl;
           }
 
           tmpmesh.vertices[i].weights[0] = weights[0];
@@ -504,8 +516,7 @@ std::vector<Texture> GLTFFile::getTextures()
       std::cout << "\n";
     } */
 
-    textures[tex.source] = Texture(int(image.width), int(image.height),
-                                   (void *)image.image.data());
+    textures[tex.source] = Texture(int(image.width), int(image.height), (void *)image.image.data());
   }
 
   return textures;
@@ -551,14 +562,12 @@ Pose getRestPose(const tinygltf::Model &tinyModel)
 
     if (node.translation.size() != 0)
     {
-      finalTransform.translation = Vector3f(
-          node.translation[0], node.translation[1], node.translation[2]);
+      finalTransform.translation = Vector3f(node.translation[0], node.translation[1], node.translation[2]);
     }
 
     if (node.scale.size() != 0)
     {
-      finalTransform.scaling =
-          Vector3f(node.scale[0], node.scale[1], node.scale[2]);
+      finalTransform.scaling = Vector3f(node.scale[0], node.scale[1], node.scale[2]);
     }
 
     if (node.rotation.size() != 0)
@@ -682,8 +691,7 @@ Clip getClip(const tinygltf::Model &tinyModel,
   for (size_t i = 0; i < animation.channels.size(); i++)
   {
     const tinygltf::AnimationChannel &channel = animation.channels[i];
-    const tinygltf::AnimationSampler &animSampler =
-        animation.samplers[channel.sampler];
+    const tinygltf::AnimationSampler &animSampler = animation.samplers[channel.sampler];
 
     if (channel.target_node < 0)
       continue;
@@ -705,6 +713,7 @@ Clip getClip(const tinygltf::Model &tinyModel,
       jointTrack.setId(channel.target_node);
       editTrack(tinyModel, animSampler, channel, jointTrack);
       clip.getTracks().push_back(jointTrack);
+      clip.SetName(animation.name);
     }
   }
 
@@ -730,10 +739,8 @@ const T *getData(const tinygltf::Model &tinyModel, const int index)
 {
 
   const tinygltf::Accessor &dataAccessor = tinyModel.accessors[index];
-  const tinygltf::BufferView &dataBufferview =
-      tinyModel.bufferViews[dataAccessor.bufferView];
+  const tinygltf::BufferView &dataBufferview = tinyModel.bufferViews[dataAccessor.bufferView];
   const tinygltf::Buffer &dataBuffer = tinyModel.buffers[dataBufferview.buffer];
 
-  return reinterpret_cast<const T *>(
-      &dataBuffer.data[dataBufferview.byteOffset + dataAccessor.byteOffset]);
+  return reinterpret_cast<const T *>(&dataBuffer.data[dataBufferview.byteOffset + dataAccessor.byteOffset]);
 }
