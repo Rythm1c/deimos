@@ -1,8 +1,7 @@
 #ifndef TEXTURE_HPP
 #define TEXTURE_HPP
 
-#include <GL/glew.h>
-#include <GL/gl.h>
+#include "../../external/glad/glad.h"
 
 #include <iostream>
 

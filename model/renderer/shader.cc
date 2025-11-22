@@ -1,6 +1,4 @@
-#include <GL/glew.h>
-
-#include <GL/gl.h>
+#include "../../external/glad/glad.h"
 
 #include <fstream>
 #include <sstream>

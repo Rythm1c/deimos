@@ -1,6 +1,6 @@
 #include <iostream>
-#include <GL/glew.h>
-#include <GL/gl.h>
+#include <stdexcept>
+#include "../external/glad/glad.h"
 
 #include "window.h"
 
@@ -29,7 +29,7 @@ void Window::init()
 
   if (SDL_Init(SDL_INIT_VIDEO) != 0)
   {
-    std::runtime_error("failed to create SDL window!");
+    throw std::runtime_error("failed to initialize SDL2");
   }
   // window creation
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -39,25 +39,30 @@ void Window::init()
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-  int flags =
-      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
-  this->win = SDL_CreateWindow("little-engine", 100, 100, this->width,
-                               this->height, flags);
+  int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+  this->win = SDL_CreateWindow("little-engine", 100, 100, this->width, this->height, flags);
   this->context = SDL_GL_CreateContext(this->win);
 
   if (SDL_GL_MakeCurrent(this->win, this->context) != 0)
   {
-    std::runtime_error("failed to set an opengl context with window!");
+    throw std::runtime_error("failed to set an opengl context with window!");
+  }
+
+  /* Initialize glad (load GL function pointers). This is required when using
+     glad instead of GLEW. Must be done after an OpenGL context is current. */
+  if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
+  {
+    throw std::runtime_error("Failed to initialize OpenGL loader (glad)");
   }
 
   SDL_GL_SetSwapInterval(1);
 
-  glewExperimental = true;
-  glewInit();
+  /*  glewExperimental = true;
+   glewInit(); */
 
   glViewport(0, 0, this->width, this->height);
   glEnable(GL_DEPTH_TEST);
-  /* glEnable(GL_CULL_FACE);
+  glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
-  glFrontFace(GL_CCW); */
+  glFrontFace(GL_CCW);
 }

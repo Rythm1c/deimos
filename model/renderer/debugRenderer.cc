@@ -1,5 +1,5 @@
 #include "debugRenderer.h"
-#include <GL/glew.h>
+#include "../../external/glad/glad.h"
 
 DebugRenderer::DebugRenderer() : VAO(0), VBO(0), EBO(0), lineShader(nullptr) {}
 
@@ -26,13 +26,11 @@ void DebugRenderer::init()
 
   glCreateBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3f) * lineVertices.size(),
-               lineVertices.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3f) * lineVertices.size(), lineVertices.data(), GL_STATIC_DRAW);
 
   glCreateBuffers(1, &EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * lineIndices.size(),
-               lineIndices.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * lineIndices.size(), lineIndices.data(), GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3f), (void *)0);
@@ -55,8 +53,7 @@ void DebugRenderer::setupBBoxLines()
   };
 }
 
-void DebugRenderer::renderBoundingBox(const BoundingBox &bbox, const Mat4x4 &transform,
-                                      const Mat4x4 &view, const Mat4x4 &projection)
+void DebugRenderer::renderBoundingBox(const BoundingBox &bbox, const Mat4x4 &transform, const Mat4x4 &view, const Mat4x4 &projection)
 {
   if (!lineShader)
     return;

@@ -53,8 +53,7 @@ Model *Viewer::getCurrModel()
 void Viewer::init()
 {
   this->phongStatic = new Shader("shaders/shader.vert", "shaders/shader.frag");
-  this->phongAnimated =
-      new Shader("shaders/animation.vert", "shaders/shader.frag");
+  this->phongAnimated = new Shader("shaders/animation.vert", "shaders/shader.frag");
   this->pbrStatic = new Shader("shaders/shader.vert", "shaders/pbr.frag");
   this->pbrAnimated = new Shader("shaders/animation.vert", "shaders/pbr.frag");
 

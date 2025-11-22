@@ -4,16 +4,23 @@
 # - Targets: all (default), build, clean, run
 
 CXX ?= g++
+CC ?= gcc
 PKG_CFLAGS := $(shell pkg-config --cflags sdl2 2>/dev/null)
 PKG_LIBS := $(shell pkg-config --libs sdl2 2>/dev/null)
 
-CXXFLAGS ?= -std=c++17 -O2 -g -Wall -Wextra $(PKG_CFLAGS) -I.
-LDFLAGS ?= $(PKG_LIBS) -lGL -ldl -lm -lGLEW
+# Extra include paths: project root, external imgui and glad locations
+EXTRA_INCLUDES := -I. -Iexternal/imgui -Iexternal/glad
+
+CXXFLAGS ?= -std=c++17 -O2 -g -Wall -Wextra $(PKG_CFLAGS) $(EXTRA_INCLUDES)
+CFLAGS ?= -O2 -g -Wall -Wextra $(PKG_CFLAGS) $(EXTRA_INCLUDES)
+
+# Link against system GL and helpers; GLEW removed (using glad)
+LDFLAGS ?= $(PKG_LIBS) -lGL -ldl -lm
 
 # Find all .cc and .cpp sources (exclude build/)
-SRCS := $(shell find . -type f \( -name '*.cc' -o -name '*.cpp' \) -not -path './build/*' -printf '%P\n')
+SRCS := $(shell find . -type f \( -name '*.cc' -o -name '*.cpp' -o -name '*.c' \) -not -path './build/*' -printf '%P\n')
 # Map sources to build object paths: foo/bar.cc -> build/foo/bar.o
-OBJS := $(patsubst %.cc,build/%.o,$(filter %.cc,$(SRCS))) $(patsubst %.cpp,build/%.o,$(filter %.cpp,$(SRCS)))
+OBJS := $(patsubst %.cc,build/%.o,$(filter %.cc,$(SRCS))) $(patsubst %.cpp,build/%.o,$(filter %.cpp,$(SRCS))) $(patsubst %.c,build/%.o,$(filter %.c,$(SRCS)))
 
 TARGET := model_viewer
 
@@ -37,6 +44,11 @@ build/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	@echo Compiling $<
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+build/%.o: %.c
+	@mkdir -p $(dir $@)
+	@echo Compiling C $<
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	@echo Cleaning build artifacts

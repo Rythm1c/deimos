@@ -2,9 +2,9 @@
 #include "../model/model.h"
 #include "../viewer/viewer.h"
 #include "window.h"
-#include "../imgui/imgui.h"
-#include "../imgui/imgui_impl_sdl2.h"
-#include "../imgui/imgui_impl_opengl3.h"
+#include "../external/imgui/imgui.h"
+#include "../external/imgui/imgui_impl_sdl2.h"
+#include "../external/imgui/imgui_impl_opengl3.h"
 
 #include <chrono>
 
@@ -31,12 +31,11 @@ void App::init()
   this->viewer = new Viewer();
   this->viewer->init();
 
-  this->viewer->addModel("astronaut", "models/astronaut/scene.gltf");
-  this->viewer->addModel("man", "models/man/scene.gltf");
+  this->viewer->addModel("zombie", "models/zombie/scene.gltf");
   this->viewer->addModel("mira", "models/mira/scene.gltf");
-  this->viewer->addModel("alien", "models/alien/Alien.gltf");
+  // this->viewer->addModel("alien", "models/alien/Alien.gltf");
 
-  this->viewer->currModel = "astronaut";
+  this->viewer->currModel = "mira";
 
   int nkeys;
   this->keyboardState = SDL_GetKeyboardState(&nkeys);

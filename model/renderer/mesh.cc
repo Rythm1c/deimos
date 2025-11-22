@@ -2,9 +2,7 @@
 #include "shader.h"
 #include "boundingVolumes.h"
 
-#include <GL/glew.h>
-
-#include <GL/gl.h>
+#include "../../external/glad/glad.h"
 
 void Mesh::init()
 {

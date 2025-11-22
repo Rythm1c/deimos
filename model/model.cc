@@ -1,8 +1,6 @@
 #include "model.h"
 
-#include <GL/glew.h>
-
-#include <GL/gl.h>
+#include "../external/glad/glad.h"
 #include <SDL2/SDL_opengl.h>
 
 Model::Model()
@@ -56,7 +54,6 @@ void Model::render(Shader &shader)
     mesh.render(shader);
   }
 }
-
 
 void Model::clean()
 {
